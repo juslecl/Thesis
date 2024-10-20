@@ -108,5 +108,5 @@ datplacexl <- datagen(500, c(3.75,1.6,0.3), rlaplace, c(5,3,-2), c(1.3,0.5,2), M
 
 res <- list()
 for (i in 1:47){
-  res[[i]] <- normbeta(datplacexl,plaplace,dlaplace)
+  res[[i]] <- normbeta(datplacexl[[i+53]],plaplace,dlaplace)
 }
