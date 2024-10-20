@@ -110,3 +110,4 @@ res <- list()
 for (i in 1:47){
   res[[i]] <- normbeta(datplacexl[[i+53]],plaplace,dlaplace)
 }
+print(res)
