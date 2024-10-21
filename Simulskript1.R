@@ -142,6 +142,8 @@ for (i in 1:100){
 
 mlenorm <- apply(mlecoco,1,function(data) sqrt(sum(data-c(-3,2,0.3))^2))
 
+mlenorm
+
 #file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
 #wb <- wb <- loadWorkbook(file_path)
 #addWorksheet(wb, "1002laplace")
