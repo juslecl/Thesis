@@ -140,7 +140,7 @@ for (i in 1:100){
   mlecoco[i,] <-c(mledatcoco[[i]]$p1,mledatcoco[[i]]$p2,mledatcoco[[i]]$p3)
 }
 
-mlenorm <- apply(mledatcoco,1,function(data) sqrt(sum(data-c(-3,2,0.3))^2))
+mlenorm <- apply(mlecoco,1,function(data) sqrt(sum(data-c(-3,2,0.3))^2))
 
 #file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
 #wb <- wb <- loadWorkbook(file_path)
