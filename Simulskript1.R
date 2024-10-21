@@ -135,6 +135,11 @@ library(optimx)
 initial_params <- rep(0, 3)
 
 mledatcoco <- lapply(datcoco, function(data) optimx(par=initial_params, fn=neg_llcauchy, X=data$X, Y=data$Y, method="BFGS"))
+mledatcoco <- matrix(rep(0,300),nrow=100)
+for (i in 1:100){
+  mledatcoco[i,] <-c(mledatcoco[[i]]$p1,mledatcoco[[i]]$p2,mledatcoco[[i]]$p3)
+}
+
 mlenorm <- apply(mledatcoco,1,function(data) sqrt(sum(data-c(-3,2,0.3))^2))
 
 #file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
