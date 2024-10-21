@@ -107,13 +107,13 @@ normbeta <- function(data, F_eps, f_eps) {
 # Model some Cauchy (interesting as regard to outliers.)
 datcoco <- datagen(500,c(-3,2,0.3),rcauchy,c(0.4,-4,1),c(0.23,3,0.75))
 
-rescoco <- list()
-for (i in 1:100) {
-  rescoco[[i]] <- normbeta(datcoco[[i]],pcauchy,dcauchy)
-  print(i)
-}
+#rescoco <- list()
+#for (i in 1:100) {
+  #rescoco[[i]] <- normbeta(datcoco[[i]],pcauchy,dcauchy)
+  #print(i)
+#}
 
-rescoco
+#rescoco
 
 # Define the negative log-likelihood function for Cauchy-distributed errors
 neg_llcauchy <- function(params, X, Y) {
@@ -135,4 +135,10 @@ library(optimx)
 initial_params <- rep(0, 3)
 
 mledatcoco <- lapply(datcoco, function(data) optimx(par=initial_params, fn=neg_llcauchy, X=data$X, Y=data$Y, method="BFGS"))
-mledatcoco
+mlenorm <- apply(mledatcoco,1,function(data) sqrt(sum(data-c(-3,2,0.3))^2))
+
+#file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
+#wb <- wb <- loadWorkbook(file_path)
+#addWorksheet(wb, "1002laplace")
+#writeData(wb, sheet = "1002laplace", resnorm3)
+#saveWorkbook(wb, file_path, overwrite = TRUE)
