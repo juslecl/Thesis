@@ -104,11 +104,35 @@ normbeta <- function(data, F_eps, f_eps) {
   return(list(norm1=sqrt(sum((backtracking(data,F_eps, f_eps)$res-data$B)^2)),norm2=sqrt(sum((data$B-ols(data))^2))))
 }
 
-datplacexl <- datagen(500, c(3.75,1.6,0.3), rlaplace, c(5,3,-2), c(1.3,0.5,2), M=100)
+# Model some Cauchy (interesting as regard to outliers.)
+datcoco <- datagen(500,c(-3,2,0.3),rcauchy,c(0.4,-4,1),c(0.23,3,0.75))
 
-res <- list()
-for (i in 1:47){
-  res[[i]] <- normbeta(datplacexl[[i+53]],plaplace,dlaplace)
+rescoco <- list()
+for (i in 1:100) {
+  rescoco[[i]] <- normbeta(datcoco,pcauchy,dcauchy)
   print(i)
 }
-print(res)
+
+rescoco
+
+# Define the negative log-likelihood function for Cauchy-distributed errors
+neg_llcauchy <- function(params, X, Y) {
+  beta <- params  # Extract regression coefficients (beta)
+  gamma <- 1  # Scale parameter (gamma) - fixed here, but could be made a parameter to optimize
+  
+  # Calculate residuals (errors) from the linear model
+  residuals <- Y - X %*% beta
+  
+  # Negative log-likelihood for Cauchy distribution
+  n <- length(Y)
+  neg_ll <- n * log(pi * gamma) + sum(log(1 + (residuals / gamma)^2))
+  
+  return(neg_ll)
+}
+
+library(optimx)
+
+initial_params <- rep(0, 3)
+
+mledatcoco <- lapply(datcoco, function(data) optimx(par=initial_params, fn=neg_llcauchy, X=data$X, Y=data$Y, method="BFGS"))
+mledatcoco
