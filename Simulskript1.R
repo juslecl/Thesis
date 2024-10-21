@@ -109,7 +109,7 @@ datcoco <- datagen(500,c(-3,2,0.3),rcauchy,c(0.4,-4,1),c(0.23,3,0.75))
 
 rescoco <- list()
 for (i in 1:100) {
-  rescoco[[i]] <- normbeta(datcoco,pcauchy,dcauchy)
+  rescoco[[i]] <- normbeta(datcoco[[i]],pcauchy,dcauchy)
   print(i)
 }
 
