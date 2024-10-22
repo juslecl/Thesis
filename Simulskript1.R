@@ -2,6 +2,7 @@
 library(splines)
 library(stats4)
 library(VGAM)
+library(openxlsx)
 
 
 ### Generating random data process.
