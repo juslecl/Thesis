@@ -106,39 +106,31 @@ normbeta <- function(data, F_eps, f_eps) {
 }
 
 # MLE algorithm.
-# Define the negative log-likelihood function for Laplace-distributed errors
-neg_lllaplace <- function(params, X, Y,b=1) {
-  beta <- params # Extract regression coefficients (beta)
-  
-  # Calculate residuals (errors) from the linear model
+neg_llt <- function(beta, X, Y, df = 2) {  
   residuals <- Y - X %*% beta
-  
-  # Negative log-likelihood for Laplace distribution
   n <- length(Y)
-  neg_ll <- n * log(2 * b) + sum(abs(residuals) / b)
+  neg_ll <- -n * log(gamma((df + 1) / 2)) + n * log(gamma(df / 2)) + n * log(sqrt(df * pi)) +
+    ((df + 1) / 2) * sum(log(1 + (residuals^2 / df)))
   
   return(neg_ll)
 }
 
-dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),rlaplace,c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
+
+dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=2),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
 
 rescoco <- list()
 for (i in 1:100) {
-  rescoco[[i]] <- normbeta(dat1[[i]],plaplace,dlaplace)
+  rescoco[[i]] <- normbeta(dat1[[i]],function(x) pt(x,df=2),function(x) dt(x,df=2))
   print(i)
 }
 
-file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
-wb <- loadWorkbook(file_path)
-addWorksheet(wb, "15005laplace")
-writeData(wb, sheet = "15005laplace", rescoco)
-saveWorkbook(wb, file_path, overwrite = TRUE)
+print(rescoco)
 
 library(optimx)
 initial_params <- c(rep(0, ncol(dat1[[1]]$X)))
 # Optimize the negative log-likelihood
 
-mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_lllaplace, X=data$X, Y=data$Y, method="BFGS"))
+mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, method="BFGS"))
 
 mlebis <- matrix(rep(0,500),nrow=100)
 for (i in 1:100){
@@ -146,32 +138,20 @@ for (i in 1:100){
 }
 
 normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
-
-file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
-wb <- loadWorkbook(file_path)
-addWorksheet(wb, "15005laplacebis")
-writeData(wb, sheet = "15005laplacebis", normmle)
-saveWorkbook(wb, file_path, overwrite = TRUE)
-
-dat1 <- datagen(500,c(-3,2,0.3,0.8,-6),rlaplace,c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
+print(normmle)
+dat1 <- datagen(500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=2),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
 
 rescoco <- list()
 for (i in 1:100) {
-  rescoco[[i]] <- normbeta(dat1[[i]],plaplace,dlaplace)
+  rescoco[[i]] <- normbeta(dat1[[i]],function(x) pt(x,df=2),function(x) dt(x,df=2))
   print(i)
 }
-
-file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
-wb <- loadWorkbook(file_path)
-addWorksheet(wb, "5005laplace")
-writeData(wb, sheet = "5005laplace", rescoco)
-saveWorkbook(wb, file_path, overwrite = TRUE)
-
+print(rescoco)
 library(optimx)
 initial_params <- c(rep(0, ncol(dat1[[1]]$X)))
 # Optimize the negative log-likelihood
 
-mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_lllaplace, X=data$X, Y=data$Y, method="BFGS"))
+mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, method="BFGS"))
 
 mlebis <- matrix(rep(0,500),nrow=100)
 for (i in 1:100){
@@ -179,32 +159,21 @@ for (i in 1:100){
 }
 
 normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
+print(normmle)
 
-file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
-wb <- loadWorkbook(file_path)
-addWorksheet(wb, "5005laplacebis")
-writeData(wb, sheet = "5005laplacebis", normmle)
-saveWorkbook(wb, file_path, overwrite = TRUE)
-
-dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),function(x) rlaplace(x, scale=4),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
+dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=5),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
 
 rescoco <- list()
 for (i in 1:100) {
-  rescoco[[i]] <- normbeta(dat1[[i]],function(x) plaplace(x, scale=4),function(x) dlaplace(x, scale=4))
+  rescoco[[i]] <- normbeta(dat1[[i]],function(x) function(x) pt(x,df=2)(x, scale=4),function(x) function(x) dt(x,df=2)(x, scale=4))
   print(i)
 }
-
-file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
-wb <- loadWorkbook(file_path)
-addWorksheet(wb, "5005laplacesc")
-writeData(wb, sheet = "5005laplacesc", rescoco)
-saveWorkbook(wb, file_path, overwrite = TRUE)
-
+print(rescoco)
 library(optimx)
 initial_params <- c(rep(0, ncol(dat1[[1]]$X)))
 # Optimize the negative log-likelihood
 
-mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_lllaplace, X=data$X, Y=data$Y, b=4, method="BFGS"))
+mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, b=4, method="BFGS"))
 
 mlebis <- matrix(rep(0,500),nrow=100)
 for (i in 1:100){
@@ -212,9 +181,4 @@ for (i in 1:100){
 }
 
 normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
-
-file_path <- "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx"
-wb <- loadWorkbook(file_path)
-addWorksheet(wb, "5005laplacebissc")
-writeData(wb, sheet = "5005laplacebissc", normmle)
-saveWorkbook(wb, file_path, overwrite = TRUE)
+print(normmle)
