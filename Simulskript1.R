@@ -134,7 +134,7 @@ mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data
 
 mlebis <- matrix(rep(0,500),nrow=100)
 for (i in 1:100){
-  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3)
+  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3,mle[[i]]$p4,mle[[i]]$p5)
 }
 
 normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
@@ -155,7 +155,7 @@ mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data
 
 mlebis <- matrix(rep(0,500),nrow=100)
 for (i in 1:100){
-  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3)
+  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3,mle[[i]]$p4,mle[[i]]$p5)
 }
 
 normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
@@ -177,8 +177,7 @@ mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data
 
 mlebis <- matrix(rep(0,500),nrow=100)
 for (i in 1:100){
-  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3)
+  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3,mle[[i]]$p4,mle[[i]]$p5)
 }
-
 normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
 print(normmle)
