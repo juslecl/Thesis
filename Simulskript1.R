@@ -117,17 +117,10 @@ neg_llt <- function(beta, X, Y, df = 5) {
 
 dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=5),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
 
-rescoco <- list()
-for (i in 1:100) {
-  rescoco[[i]] <- normbeta(dat1[[i]],function(x) pt(x,df=5),function(x) dt(x,df=5))
-  print(i)
-}
-print(rescoco)
 library(optimx)
 initial_params <- c(rep(0, ncol(dat1[[1]]$X)))
-# Optimize the negative log-likelihood
 
-mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, b=4, method="BFGS"))
+mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, method="BFGS"))
 
 mlebis <- matrix(rep(0,500),nrow=100)
 for (i in 1:100){
