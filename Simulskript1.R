@@ -106,7 +106,7 @@ normbeta <- function(data, F_eps, f_eps) {
 }
 
 # MLE algorithm.
-neg_llt <- function(beta, X, Y, df = 2) {  
+neg_llt <- function(beta, X, Y, df = 5) {  
   residuals <- Y - X %*% beta
   n <- length(Y)
   neg_ll <- -n * log(gamma((df + 1) / 2)) + n * log(gamma(df / 2)) + n * log(sqrt(df * pi)) +
@@ -115,57 +115,11 @@ neg_llt <- function(beta, X, Y, df = 2) {
   return(neg_ll)
 }
 
-
-dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=2),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
-
-rescoco <- list()
-for (i in 1:100) {
-  rescoco[[i]] <- normbeta(dat1[[i]],function(x) pt(x,df=2),function(x) dt(x,df=2))
-  print(i)
-}
-
-print(rescoco)
-
-library(optimx)
-initial_params <- c(rep(0, ncol(dat1[[1]]$X)))
-# Optimize the negative log-likelihood
-
-mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, method="BFGS"))
-
-mlebis <- matrix(rep(0,500),nrow=100)
-for (i in 1:100){
-  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3,mle[[i]]$p4,mle[[i]]$p5)
-}
-
-normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
-print(normmle)
-dat1 <- datagen(500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=2),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
-
-rescoco <- list()
-for (i in 1:100) {
-  rescoco[[i]] <- normbeta(dat1[[i]],function(x) pt(x,df=2),function(x) dt(x,df=2))
-  print(i)
-}
-print(rescoco)
-library(optimx)
-initial_params <- c(rep(0, ncol(dat1[[1]]$X)))
-# Optimize the negative log-likelihood
-
-mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, method="BFGS"))
-
-mlebis <- matrix(rep(0,500),nrow=100)
-for (i in 1:100){
-  mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3,mle[[i]]$p4,mle[[i]]$p5)
-}
-
-normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
-print(normmle)
-
 dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=5),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
 
 rescoco <- list()
 for (i in 1:100) {
-  rescoco[[i]] <- normbeta(dat1[[i]],function(x) function(x) pt(x,df=2)(x, scale=4),function(x) function(x) dt(x,df=2)(x, scale=4))
+  rescoco[[i]] <- normbeta(dat1[[i]],function(x) pt(x,df=5),function(x) dt(x,df=5))
   print(i)
 }
 print(rescoco)
