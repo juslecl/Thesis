@@ -46,7 +46,6 @@ critbis <- function(beta, data, F_eps) {
 
 
 ### Gradient for the criterion.
-{r include=FALSE}
 # Implement the gradient. Returns a vector in R^d and the corresponding L-2 norm.
 grad <- function(data, beta, F_eps,f_eps) {
   n <- length(data$Y)
@@ -102,7 +101,7 @@ backtracking<-function(data, cdf, pmf, tol = 1e-3, a = .001, b = .9,max_iteratio
 
 # Create a function which returns as a list both || \beta^*-\beta_0|| and || OLS-\beta_0||.
 normbeta <- function(data, F_eps, f_eps) {
-  return(list(norm1=sqrt(sum((backtracking(data,F_eps, f_eps)$res-data$B)^2)),norm2=sqrt(sum((data$B-ols(data))^2))))
+  return(list(norm1=sqrt(sum((backtracking(data,F_eps, f_eps)$res-data$B)^2)),norm2=sqrt(sum((data$B-ols(data))^2)),bias1=mean(backtracking(data,F_eps, f_eps)$res)-data$B, bias2=mean(ols(data))-data$B, var1=var(backtracking(data,F_eps, f_eps)$res), var2=var(ols(data))))
 }
 
 
@@ -515,4 +514,26 @@ resnorm6 <- rbind(c(0.070450915, 0.070617698),
                   c(0.094656815, 0.094101709),
                   c(0.046590362, 0.046447967)
 
-
+                  # MLE algorithm.
+                  neg_llt <- function(beta, X, Y, df = 5) {  
+                    residuals <- Y - X %*% beta
+                    n <- length(Y)
+                    neg_ll <- -n * log(gamma((df + 1) / 2)) + n * log(gamma(df / 2)) + n * log(sqrt(df * pi)) +
+                      ((df + 1) / 2) * sum(log(1 + (residuals^2 / df)))
+                    
+                    return(neg_ll)
+                  }
+                  
+                  dat1 <- datagen(1500,c(-3,2,0.3,0.8,-6),function(x) rt(x,df=5),c(0.4,-4,1,2.3,1.75),c(0.23,3,0.75,1,2))
+                  
+                  library(optimx)
+                  initial_params <- c(rep(0, ncol(dat1[[1]]$X)))
+                  
+                  mle <- lapply(dat1, function(data) optimx(par=initial_params, fn=neg_llt, X=data$X, Y=data$Y, method="BFGS"))
+                  
+                  mlebis <- matrix(rep(0,500),nrow=100)
+                  for (i in 1:100){
+                    mlebis[i,] <-c(mle[[i]]$p1,mle[[i]]$p2,mle[[i]]$p3,mle[[i]]$p4,mle[[i]]$p5)
+                  }
+                  normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
+                  print(normmle)
