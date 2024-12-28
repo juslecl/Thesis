@@ -108,7 +108,7 @@ normbeta <- function(data, F_eps, f_eps) {
 datlaplace <- datagen(1500, c(0.5,-0.3,0.1,0.7), rlaplace, c(0.34,-0.9,1.12,0.7), c(0.5,0.4,0.3,0.1), M=100)
 resnorm6 <- list()
       for (i in 1:100) {
-        resnorm6[[i]] <- normbeta(datlaplace[[i]],rlaplace ,dlaplace)
+        resnorm6[[i]] <- normbeta(datlaplace[[i]],plaplace ,dlaplace)
         print(i)
       }
 resnorm6
