@@ -112,3 +112,4 @@ resnorm6 <- list()
         print(i)
       }
 resnorm6
+warnings()
