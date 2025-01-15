@@ -397,9 +397,6 @@ apply(resnorm4,2,mean)
 
 ### Try with some Normal error data n=500, d=3, M=100.
 
-Simulation with 100 replications of a data set with 500 observations, 3 predicators (X1,X2,X3 normally distributed respectively with N(2,1), N(1.35,2.15), N(0.75,3)), true beta of (-0.67,2.6,1) and errors distributed according to a Normal(0,2).
-
-
 datnorm3D <- datagen(500, c(-0.67,2.6,1), function(x) rnorm(x, mean=0, sd=2), c(2,1.35,0.75), c(1,2.15,3), M=100)
 
 resnorm5 <- list()
@@ -537,3 +534,43 @@ resnorm6 <- rbind(c(0.070450915, 0.070617698),
                   }
                   normmle <- apply(mlebis,1,function(data) sqrt(sum(data-c(-3,2,0.3,0.8,-6))^2))
                   print(normmle)
+
+                  
+                  #norm1=norm to myBeta 
+                  #norm2=norm to OLS
+                  #norm to MLE
+                  n1 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "3002norm",cols=c(1,2))
+                  n2 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "5003norm",cols=c(1,2))
+                  n3 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "15003norm",cols=c(1,2))
+                  l1 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "1002laplace",cols=c(1,2))
+                  l2 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "5003laplace",cols=c(1,2,3))
+                  t1 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "1k5005t",cols=c(1,2,3))
+                  t2 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "5005t",cols=c(1,2,3))
+                  t3 <- read.xlsx("polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res_simul.xlsx", 
+                                  sheet = "15005tdf5",cols=c(1,2,3))
+                  
+                  c(apply(n1,2,function(x) mean(x)), apply(n1,2,function(x) var(x)))
+                  c(apply(n2,2,function(x) mean(x)), apply(n2,2,function(x) var(x)))
+                  c(apply(n3,2,function(x) mean(x)), apply(n3,2,function(x) var(x)))
+                  c(apply(l1,2,function(x) mean(x)), apply(l1,2,function(x) var(x)))
+                  c(apply(l2,2,function(x) mean(x)), apply(l2,2,function(x) var(x)))
+                  c(apply(t1,2,function(x) mean(x)), apply(t1,2,function(x) var(x)))
+                  c(apply(t2,2,function(x) mean(x)), apply(t2,2,function(x) var(x)))
+                  c(apply(t3,2,function(x) mean(x)), apply(t3,2,function(x) var(x)))
+                  
+                  #MSE
+                  c(apply(n1,2,function(x) mean(x^2)))
+                  c(apply(n2,2,function(x) mean(x^2)))
+                  c(apply(n3,2,function(x) mean(x^2)))
+                  c(apply(l1,2,function(x) mean(x^2)))
+                  c(apply(l2,2,function(x) mean(x^2)))
+                  c(apply(t1,2,function(x) mean(x^2)))
+                  c(apply(t2,2,function(x) mean(x^2)))
+                  c(apply(t3,2,function(x) mean(x^2)))

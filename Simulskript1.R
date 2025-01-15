@@ -3,6 +3,7 @@ library(splines)
 library(stats4)
 library(VGAM)
 library(openxlsx)
+library(optimx)
 
 
 ### Generating random data process.
@@ -76,7 +77,7 @@ grad <- function(data, beta, F_eps,f_eps) {
 
 # Gradient descent algorithm.
 
-# Function to build OLS.
+# Function to build OLS. => retourne une dx1 matrice.
 ols <- function(data) {
   return(solve(t(data$X)%*%data$X)%*%t(data$X)%*%data$Y)
 }
@@ -95,7 +96,7 @@ backtracking<-function(data, cdf, pmf, tol = 1e-3, a = .001, b = .9,max_iteratio
     k <- k + 1
   }
   return(list(iteration = k - 1, res = betaplus, compa = cbind(data$B,betaplus,ols(data))))
-}
+} #compa = matrice dx3.
 
 
 ### Simulations for || \beta^*-\beta_0||, || OLS-\beta_0||
@@ -105,11 +106,31 @@ normbeta <- function(data, F_eps, f_eps) {
   return(list(norm1=sqrt(sum((backtracking(data,F_eps, f_eps)$res-data$B)^2)),norm2=sqrt(sum((data$B-ols(data))^2)),bias1=mean(backtracking(data,F_eps, f_eps)$res)-data$B, bias2=mean(ols(data))-data$B, var1=var(backtracking(data,F_eps, f_eps)$res), var2=var(ols(data))))
 }
 
-datlaplace <- datagen(1500, c(0.5,-0.3,0.1,0.7), rlaplace, c(0.34,-0.9,1.12,0.7), c(0.5,0.4,0.3,0.1), M=100)
-resnorm6 <- list()
-      for (i in 1:100) {
-        resnorm6[[i]] <- normbeta(datlaplace[[i]],plaplace ,dlaplace)
-        print(i)
-      }
-resnorm6
-warnings()
+# MLE for Laplace
+neg_lllaplace <- function(params, X, Y) {
+  beta <- params 
+  b <- 1  
+  residuals <- Y - X %*% beta
+  print(residuals)
+  n <- length(Y)
+  neg_ll <- n * log(2 * b) + sum(abs(residuals) / b)
+  return(neg_ll)
+}
+
+set.seed(123)
+train <- datagen(500, c(0.75,0.33,1,-0.8), rlaplace, rnorm(4), abs(rnorm(4)), M=1)
+ols(train[[1]])
+backtracking(train[[1]],plaplace,dlaplace)
+
+initial_params <- c(rep(0, 4))
+# Optimize the negative log-likelihood
+fit <- optimx(par=as.vector(ols(train[[1]])), fn=neg_lllaplace, X=train[[1]]$X, Y=train[[1]]$Y, method="BFGS")
+
+datares <- function(data, F_eps, f_eps){
+  olse <- ols(data)
+  crit <- backtracking(data, F_eps, f_eps)$res
+  res <- cbind.data.frame("OLS"=ols(data),"crit=")
+  mle <- 
+  return(cbind.data.frame(olse,crit,res,mle))
+}
+
