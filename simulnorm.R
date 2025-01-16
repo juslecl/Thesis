@@ -117,21 +117,21 @@ trainnorm <- datagen(500, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1
 res5004 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
 write.csv(res5004 , "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res5004.csv")
 #system('git add res5004.csv')
-#system('git commit -m "ajout res" ')
-#system('git push origin main" ')
+#system('git commit -m "ajout res"')
+#system('git push origin main ')
 
 trainnorm <- datagen(200, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
 res2004 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
 write.csv(res2004 , "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res2004.csv")
 #system('git add res2004.csv')
-#system('git commit -m "ajout res" ')
-#system('git push origin main" ')
+#system('git commit -m "ajout res"')
+#system('git push origin main ')
 
 trainnorm <- datagen(500, c(0.95,-0.16), rnorm, c(3,-1), c(1,1), M=100)
 
 res5002 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
 write.csv(res5002 , "~/polybox - Justine Leclerc (jleclerc@student.ethz.ch)@polybox.ethz.ch (2)/THESIS !/res5002.csv")
 #system('git add res5002.csv')
-#system('git commit -m "ajout res" ')
-#system('git push origin main" ')
+#system('git commit -m "ajout res"')
+#system('git push origin main ')
