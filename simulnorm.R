@@ -135,3 +135,25 @@ write.csv(res5002 , "res5002.csv")
 system('git add res5002.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
+
+# Manip. des résultats.
+library(readr)
+res2004 <- read_csv("Desktop/Thesis GIT/res2004.csv")
+res5002 <- read_csv("Desktop/Thesis GIT/res5002.csv")
+res5004 <- read_csv("Desktop/Thesis GIT/res5004.csv")
+
+beta <- c(0.95,-0.16,1.23,0.37)
+
+res2004olse <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("olse")))))
+res2004crit <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("crit")))))
+res5002olse <- as.data.frame(t(as.matrix(res5002 %>% select(starts_with("olse")))))
+res5002crit <- as.data.frame(t(as.matrix(res5002 %>% select(starts_with("crit")))))
+res5004olse <- as.data.frame(t(as.matrix(res5004 %>% select(starts_with("olse")))))
+res5004crit <- as.data.frame(t(as.matrix(res5004 %>% select(starts_with("crit")))))
+
+mse <- function(trueb,data){
+  return((1/nrow(data))*sum(apply(data,1,function(x) (x-trueb)^2)))
+}
+
+mse(beta,res2004olse)
+mse(beta, res2004crit)
