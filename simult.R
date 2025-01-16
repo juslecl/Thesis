@@ -106,18 +106,17 @@ normbeta <- function(data, F_eps, f_eps) {
   return(list(norm1=sqrt(sum((backtracking(data,F_eps, f_eps)$res-data$B)^2)),norm2=sqrt(sum((data$B-ols(data))^2)),bias1=mean(backtracking(data,F_eps, f_eps)$res)-data$B, bias2=mean(ols(data))-data$B, var1=var(backtracking(data,F_eps, f_eps)$res), var2=var(ols(data))))
 }
 
-# MLE for Laplace
-neg_lllaplace <- function(params, X, Y,b) {
-  beta <- params 
+neg_llt <- function(beta, X, Y, df = 5) {  
   residuals <- Y - X %*% beta
-  print(residuals)
   n <- length(Y)
-  neg_ll <- n * log(2 * b) + sum(abs(residuals) / b)
+  neg_ll <- -n * log(gamma((df + 1) / 2)) + n * log(gamma(df / 2)) + n * log(sqrt(df * pi)) +
+    ((df + 1) / 2) * sum(log(1 + (residuals^2 / df)))
+  
   return(neg_ll)
 }
 
-mllaplace <- function(data,be) {
-  fit <- optimx(par=c(rep(0,length(data$B))), fn=neg_lllaplace, X=data$X, Y=data$Y, b=be, method="BFGS")
+mlt <- function(data,be) {
+  fit <- optimx(par=c(rep(0,length(data$B))), fn=neg_llt, X=data$X, Y=data$Y, df=be, method="BFGS")
   resvec <- fit[ ,1:length(data$B)]
   return(t(resvec))
 }
@@ -125,58 +124,57 @@ mllaplace <- function(data,be) {
 datares <- function(data, F_eps, f_eps,be){
   olse <- ols(data)
   crit <- backtracking(data, F_eps, f_eps)$res
-  mle <- mllaplace(data,be)
+  mle <- mlt(data,be)
   return(cbind.data.frame(olse,crit,mle))
 }
 
 #-------------------
 
-trainlaplace <- datagen(500, c(0.95,-0.16,1.23,0.37), rlaplace, c(3,-1,2,0.5), c(1,1,1,1), M=100)
+traint <- datagen(500, c(0.95,-0.16,1.23,0.37), function(y) rt(y,df=1), c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
-res5004 <- lapply(trainlaplace,function(x) datares(x, plaplace, dlaplace,1))
-write.csv(res5004 , "reslp5004.csv")
-system('git add reslp5004.csv')
+res5004 <- lapply(traint,function(x) datares(x, function(y) pt(y,df=1), function(y) dt(y,df=1),1))
+write.csv(res5004 , "rest5004.csv")
+system('git add rest5004.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
-trainlaplace <- datagen(200, c(0.95,-0.16,1.23,0.37), rlaplace, c(3,-1,2,0.5), c(1,1,1,1), M=100)
+traint <- datagen(200, c(0.95,-0.16,1.23,0.37), function(y) rt(y,df=1), c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
-res2004 <- lapply(trainlaplace,function(x) datares(x, plaplace, dlaplace,1))
-write.csv(res2004 , "reslp2004.csv")
-system('git add reslp2004.csv')
+res2004 <- lapply(traint,function(x) datares(x, function(y) pt(y,df=1), function(y) dt(y,df=1),1))
+write.csv(res2004 , "rest2004.csv")
+system('git add rest2004.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
-trainlaplace <- datagen(500, c(0.95,-0.16), rlaplace, c(3,-1), c(1,1), M=100)
+traint <- datagen(500, c(0.95,-0.16), function(y) rt(y,df=1), c(3,-1), c(1,1), M=100)
 
-res5002 <- lapply(trainlaplace,function(x) datares(x, plaplace, dlaplace,1))
-write.csv(res5002 , "reslp5002.csv")
-system('git add reslp5002.csv')
+res5002 <- lapply(traint,function(x) datares(x, function(y) pt(y,df=1), function(y) dt(y,df=1),1))
+write.csv(res5002 , "rest5002.csv")
+system('git add rest5002.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
 #------
-trainlaplace <- datagen(500, c(0.95,-0.16,1.23,0.37), function(x) rlaplace(x, scale=4), c(3,-1,2,0.5), c(1,1,1,1), M=100)
+traint <- datagen(500, c(0.95,-0.16,1.23,0.37), function(x) rt(x, df=4), c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
-res5004 <- lapply(trainlaplace,function(x) datares(x, function(y) plaplace(x, scale=4), function(x) dlaplace(x, scale=4),4))
-write.csv(res5004 , "reslpbis5004.csv")
-system('git add reslpbis5004.csv')
+res5004 <- lapply(traint,function(x) datares(x, function(y) pt(y, df=4), function(y) dt(x, df=4),4))
+write.csv(res5004 , "restbis5004.csv")
+system('git add restbis5004.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
-trainlaplace <- datagen(200, c(0.95,-0.16,1.23,0.37), function(x) rlaplace(x, scale=4), c(3,-1,2,0.5), c(1,1,1,1), M=100)
+traint <- datagen(200, c(0.95,-0.16,1.23,0.37), function(x) rt(x, df=4), c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
-res2004 <- lapply(trainlaplace,function(x) datares(x, function(y) plaplace(y, scale=4), function(y) dlaplace(y, scale=4),4))
-write.csv(res2004 , "reslpbis2004.csv")
-system('git add reslpbis2004.csv')
+res2004 <- lapply(traint,function(x) datares(x, function(y) pt(y, df=4), function(y) dt(y, df=4),4))
+write.csv(res2004 , "restbis2004.csv")
+system('git add restbis2004.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
-trainlaplace <- datagen(500, c(0.95,-0.16), function(y) rlaplace(y, scale=4), c(3,-1), c(1,1), M=100)
+traint <- datagen(500, c(0.95,-0.16), function(y) rt(y, df=4), c(3,-1), c(1,1), M=100)
 
-res5002 <- lapply(trainlaplace,function(x) datares(x, function(y) plaplace(y, scale=4), function(y) dlaplace(y, scale=4),4))
-write.csv(res5002 , "reslpbis5002.csv")
-system('git add reslpbis5002.csv')
+res5002 <- lapply(traint,function(x) datares(x, function(y) pt(y, df=4), function(y) dt(y, df=4),4))
+write.csv(res5002 , "restbis5002.csv")
+system('git add restbis5002.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
-
