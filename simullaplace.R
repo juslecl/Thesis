@@ -158,7 +158,7 @@ system('git push origin main ')
 #------
 trainlaplace <- datagen(500, c(0.95,-0.16,1.23,0.37), function(x) rlaplace(x, scale=4), c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
-res5004 <- lapply(trainlaplace,function(x) datares(x, function(y) plaplace(x, scale=4), function(x) dlaplace(x, scale=4),4))
+res5004 <- lapply(trainlaplace,function(x) datares(x, function(y) plaplace(y, scale=4), function(y) dlaplace(y, scale=4),4))
 write.csv(res5004 , "reslpbis5004.csv")
 system('git add reslpbis5004.csv')
 system('git commit -m "ajout res"')
