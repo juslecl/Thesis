@@ -144,6 +144,7 @@ res5004 <- read_csv("Desktop/Thesis GIT/res5004.csv")
 
 beta <- c(0.95,-0.16,1.23,0.37)
 
+library(dplyr)
 res2004olse <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("olse")))))
 res2004crit <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("crit")))))
 res5002olse <- as.data.frame(t(as.matrix(res5002 %>% select(starts_with("olse")))))
@@ -155,5 +156,22 @@ mse <- function(trueb,data){
   return((1/nrow(data))*sum(apply(data,1,function(x) (x-trueb)^2)))
 }
 
+mse(beta[1:2],res5002olse)
+mse(beta[1:2], res5002crit)
+mse(beta,res5004olse)
+mse(beta, res5004crit)
 mse(beta,res2004olse)
 mse(beta, res2004crit)
+
+apply(res5002olse,2,var)/apply(res5002crit,2,var)
+apply(res5004olse,2,var)/apply(res5004crit,2,var)
+
+plot(res2004crit[,1],res2004olse[,1])
+abline(a=0,b=1)
+
+plot(res5004crit[,1],res5004olse[,1])
+abline(a=0,b=1)
+
+lm(res2004crit[,1]~res2004olse[,1])
+lm(res5004crit[,1]~res5004olse[,1])
+plot(lm(res2004crit[,1]~res5004olse[,1]))
