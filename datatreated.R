@@ -5,6 +5,9 @@ library(openxlsx)
 library(optimx)
 library(dplyr)
 library(readr)
+library(car)
+
+beta <- c(0.95,-0.16,1.23,0.37)
 
 # Functions for data treatment.
 mse <- function(trueb,data){
@@ -22,30 +25,48 @@ dataresbis <- function(data,beta){
 cltnorm1 <- matrix(nrow=100,ncol=4)
 for (i in 1:100) {
   for (j in 1:4) {
-  cltnorm1[i,j]<- sqrt(500)*sqrt(xxtnorm1[[i]][j,j])*res2004crit[i,j ]
+  cltnorm1[i,j]<- sqrt(500)*(res5004crit[i,j]-beta[j])
   }
 }
 
 cltnorm2 <- matrix(nrow=100,ncol=4)
 for (i in 1:100) {
   for (j in 1:4) {
-    cltnorm2[i,j]<- sqrt(500)*sqrt(xxtnorm2[[i]][j,j])*res2004crit[i,j ]
+    cltnorm2[i,j]<- sqrt(200)*(res2004crit[i,j]-beta[j])
   }
 }
 
-cltnorm3 <- matrix(nrow=100,ncol=4)
+cltnorm3 <- matrix(nrow=100,ncol=2)
 for (i in 1:100) {
   for (j in 1:2) {
-    cltnorm3[i,j]<- sqrt(500)*sqrt(xxtnorm3[[i]][j,j])*res2004crit[i,j ]
+    cltnorm3[i,j]<- sqrt(500)*(res5002crit[i,j]-beta[j])
   }
 }
 
+par(mfrow=c(1,3))
+qqPlot(cltnorm1[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shanorm1 <- shapiro.test(cltnorm1[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shanorm1$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltnorm2[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(200) * (hat(beta)[2] + 0.16)))
+shanorm2 <- shapiro.test(cltnorm2[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shanorm2$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltnorm3[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shanorm3 <- shapiro.test(cltnorm3[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shanorm3$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+
+c(mean(cltnorm1[,2]),mean(cltnorm2[,2]),mean(cltnorm3[,2]))
+c(var(cltnorm1[,2]),var(cltnorm2[,2]),var(cltnorm3[,2]))
 # Manip. des résultats SIMULNORM.
 res2004 <- read_csv("Desktop/Thesis GIT/res2004.csv")
 res5002 <- read_csv("Desktop/Thesis GIT/res5002.csv")
 res5004 <- read_csv("Desktop/Thesis GIT/res5004.csv")
 
-beta <- c(0.95,-0.16,1.23,0.37)
 
 res2004olse <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("olse")))))
 res2004crit <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("crit")))))
@@ -71,23 +92,6 @@ msenorm$V2 <- as.numeric(msenorm$V2)
 msenorm$V3 <- as.numeric(msenorm$V3)
 plot(msenorm[,2],msenorm[,3], xlab="Number of observation per dimension",ylab="MSE", col=msenorm[,1],type="b", main="Gaussian errors N(0,1)" )
 legend(legend =c("OLSE","beta_hat"), col=mselp[,1],x="topright", pch=1 )
-
-
-apply(res5002olse,2,var)/apply(res5002crit,2,var)
-apply(res5004olse,2,var)/apply(res5004crit,2,var)
-
-plot(res2004crit[,1],res2004olse[,1])
-abline(a=0,b=1)
-
-plot(res5004crit[,1],res5004olse[,1])
-abline(a=0,b=1)
-
-lm(res2004crit[,1]~res2004olse[,1])
-lm(res5004crit[,1]~res5004olse[,1])
-plot(lm(res2004crit[,1]~res5004olse[,1]))
-
-hist(res5004crit[,1])
-lines(density(res5004crit[,1]))
 
 # Manip. des résultats SIMULLAPLACE.
 betalp <- c(0.95,-0.16,1.23,0.37)
@@ -120,7 +124,7 @@ mselp$V1 <- as.factor(mselp$V1)
 mselp$V2 <- as.numeric(mselp$V2)
 mselp$V3 <- as.numeric(mselp$V3)
 
-fisherlp <- solve(diag(nrow=4,ncol = 4) + c(3,-1,2,0.5)%*%t(c(3,-1,2,0.5)))
+
   
 par(mfrow=c(2,2))
 hist(reslp2004mle$V2, probability = TRUE)
@@ -157,8 +161,6 @@ filelpbis <- list(reslpbis2004olse,
      reslpbis5004olse,
      reslpbis5004crit, reslpbis5004mle, reslpbis5002olse,
      reslpbis5002crit, reslpbis5002mle)
-
-fisherlpbis <- fisherlp*16
 
 syntlpbis<-lapply(filelpbis,function(x) dataresbis(x,betalp))
 mselpbis <- as.data.frame(cbind(rep(c("OLSE","beta_hat","MLE"),3),as.numeric(rep(c(50,125,250),each=3)),as.numeric(unlist(lapply(syntlpbis, function(x) x$mse)))))
@@ -324,8 +326,8 @@ par(mfrow=c(2,2))
 
 # 1.PLOTS MSE.
 par(mfrow=c(1,2))
-plot(msenorm[,2],msenorm[,3], xlab="Number of observation per dimension",ylab="MSE", col=msenorm[,1],type="b", main="",pch=16 )
-legend(legend =c("OLSE/MLE",expression(hat(beta))), col=mselp[,1],x="topright", pch=16 )
+plot(msenorm[,2],msenorm[,3], xlab="Number of observation per dimension",ylab="MSE", col=msenorm[,1],type="p", main="",pch=16 )
+legend(legend =c("OLSE/MLE",expression(hat(beta))), col=mselp[,1],x="topright", pch=16,cex=0.6 )
 # Calculate global x and y limits
 x_range <- range(c(mselp[,2], mselpbis[,2]))
 y_range <- range(c(mselp[,3], mselpbis[,3]))
@@ -335,23 +337,23 @@ plot(mselp[,2], mselp[,3],
      xlab = "Number of observation per dimension", 
      ylab = "MSE", 
      col = mselp[,1], 
-     type = "b", 
+     type = "p", 
      main = "",
      xlim = x_range, 
      ylim = y_range, 
-     pch = 16) # Solid points for L(1)
+     pch = 16,cex=0.7) # Solid points for L(1)
 
 # Add the second dataset, keeping colors consistent with mselp[,1]
 points(mselpbis[,2], mselpbis[,3], 
        col = mselp[,1], # Use the same color from mselp[,1]
        pch = 17,        # Use a different point style for L(4)
-       type = "b")      # Add lines and points for consistency
+       type = "p")      # Add lines and points for consistency
 
 # Add a legend to differentiate between datasets
 legend("topright", 
        legend = c("L(1)", "L(4)","OLSE",expression(hat(beta)),"MLE"), 
        col = c("black", "black", mselp[,1]), # Use unique colors from mselp[,1]
-       pch = c(16, 17,15,15,15),         # Matching point styles
+       pch = c(16, 17,15,15,15), cex=0.6        # Matching point styles
 )                 # Add line styles to legend
 
 # 2. t-tests ; is the crit that different from OLSE ?
@@ -415,7 +417,7 @@ lines(density(reslp2004mle$V2),col="red",lty=1)
 lines(density(reslpbis2004crit$V2),col="blue",main="",lty=2)
 lines(density(reslpbis2004olse$V2),col="green",lty=2)
 lines(density(reslpbis2004mle$V2),col="red",lty=2)
-legend(x="topright", legend=c("L(1)","L(4)",expression(hat(beta)),"OLSE","MLE"),lty=c(1,2,1,1,1),col=c("black","blue","green","red"),cex=0.7)
+legend(x="topright", legend=c("L(1)","L(4)",expression(hat(beta)),"OLSE","MLE"),lty=c(1,2,1,1,1),col=c("black","black","blue","green","red"),cex=0.7)
 
 plot(density(reslp5004crit$V2),col="blue",main="",lty=1,xlim=c(-1.5,1.5),ylim=c(0,10))
 lines(density(reslp5004olse$V2),col="green",lty=1)
@@ -423,7 +425,7 @@ lines(density(reslp5004mle$V2),col="red",lty=1)
 lines(density(reslpbis5004crit$V2),col="blue",main="",lty=2)
 lines(density(reslpbis5004olse$V2),col="green",lty=2)
 lines(density(reslpbis5004mle$V2),col="red",lty=2)
-legend(x="topright", legend=c("L(1)","L(4)",expression(hat(beta)),"OLSE","MLE"),lty=c(1,2,1,1,1),col=c("black","blue","green","red"),cex=0.7)
+legend(x="topright", legend=c("L(1)","L(4)",expression(hat(beta)),"OLSE","MLE"),lty=c(1,2,1,1,1),col=c("black","black","blue","green","red"),cex=0.7)
 
 plot(density(reslp5002crit$V2),col="blue",main="",lty=1,xlim=c(-1.5,1.5),ylim=c(0,10))
 lines(density(reslp5002olse$V2),col="green",lty=1)
@@ -431,7 +433,7 @@ lines(density(reslp5002mle$V2),col="red",lty=1)
 lines(density(reslpbis5002crit$V2),col="blue",main="",lty=2)
 lines(density(reslpbis5002olse$V2),col="green",lty=2)
 lines(density(reslpbis5002mle$V2),col="red",lty=2)
-legend(x="topright", legend=c("L(1)","L(4)",expression(hat(beta)),"OLSE","MLE"),lty=c(1,2,1,1,1),col=c("black","blue","green","red"),cex=0.7)
+legend(x="topright", legend=c("L(1)","L(4)",expression(hat(beta)),"OLSE","MLE"),lty=c(1,2,1,1,1),col=c("black","black","blue","green","red"),cex=0.7)
 
 #Boxplots.
 par(mfrow=c(3,3))
@@ -454,5 +456,172 @@ abline(h=-0.16)
 boxplot(reslpbis5002crit$V2,reslpbis5002olse$V2,reslpbis5002mle$V2,names=c(expression(hat(beta)),"OLSE","MLE"),ylim=c(min(min(reslpbis2004crit$V2),min(reslpbis2004olse$V2)),max(max(reslpbis2004crit$V2),max(reslpbis2004olse$V2))))
 abline(h=-0.16)
 
+# QQ Laplace crit.
+cltlp1 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp1[i,j]<- sqrt(500)*(reslp5004crit[i,j]-beta[j])
+  }
+}
 
+cltlp2 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp2[i,j]<- sqrt(200)*(reslp2004crit[i,j]-beta[j])
+  }
+}
 
+cltlp3 <- matrix(nrow=100,ncol=2)
+for (i in 1:100) {
+  for (j in 1:2) {
+    cltlp3[i,j]<- sqrt(500)*(reslp5002crit[i,j]-beta[j])
+  }
+}
+
+cltlp4 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp4[i,j]<- sqrt(500)*(reslpbis5004crit[i,j]-beta[j])
+  }
+}
+
+cltlp5 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp5[i,j]<- sqrt(200)*(reslpbis2004crit[i,j]-beta[j])
+  }
+}
+
+cltlp6 <- matrix(nrow=100,ncol=2)
+for (i in 1:100) {
+  for (j in 1:2) {
+    cltlp6[i,j]<- sqrt(500)*(reslpbis5002crit[i,j]-beta[j])
+  }
+}
+
+par(mfrow=c(2,3))
+qqPlot(cltlp1[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp1 <- shapiro.test(cltlp1[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp1$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp2[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(200) * (hat(beta)[2] + 0.16)))
+shalp2 <- shapiro.test(cltlp2[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp2$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp3[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp3 <- shapiro.test(cltlp3[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp3$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp4[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp4 <- shapiro.test(cltlp4[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp4$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp5[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(200) * (hat(beta)[2] + 0.16)))
+shalp5 <- shapiro.test(cltlp5[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp5$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp6[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp6 <- shapiro.test(cltlp6[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp6$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+
+c(mean(cltlp1[,2]),mean(cltlp2[,2]),mean(cltlp3[,2]),mean(cltlp4[,2]),mean(cltlp5[,2]),mean(cltlp6[,2]))
+c(var(cltlp1[,2]),var(cltlp2[,2]),var(cltlp3[,2]),var(cltlp4[,2]),var(cltlp5[,2]),var(cltlp6[,2]))
+
+# QQ Laplace MLE.
+cltlp7 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp7[i,j]<- sqrt(500)*(reslp5004mle[i,j]-beta[j])
+  }
+}
+
+cltlp8 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp8[i,j]<- sqrt(200)*(reslp2004mle[i,j]-beta[j])
+  }
+}
+
+cltlp9 <- matrix(nrow=100,ncol=2)
+for (i in 1:100) {
+  for (j in 1:2) {
+    cltlp9[i,j]<- sqrt(500)*(reslp5002mle[i,j]-beta[j])
+  }
+}
+
+cltlp10 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp10[i,j]<- sqrt(500)*(reslpbis5004mle[i,j]-beta[j])
+  }
+}
+
+cltlp11 <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltlp11[i,j]<- sqrt(200)*(reslpbis2004mle[i,j]-beta[j])
+  }
+}
+
+cltlp12 <- matrix(nrow=100,ncol=2)
+for (i in 1:100) {
+  for (j in 1:2) {
+    cltlp12[i,j]<- sqrt(500)*(reslpbis5002mle[i,j]-beta[j])
+  }
+}
+
+par(mfrow=c(2,3))
+qqPlot(cltlp7[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp7 <- shapiro.test(cltlp7[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp7$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp8[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(200) * (hat(beta)[2] + 0.16)))
+shalp2 <- shapiro.test(cltlp8[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp2$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp9[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp9 <- shapiro.test(cltlp9[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp9$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp10[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp10 <- shapiro.test(cltlp10[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp10$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp11[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(200) * (hat(beta)[2] + 0.16)))
+shalp11 <- shapiro.test(cltlp11[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp11$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+qqPlot(cltlp12[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
+shalp12 <- shapiro.test(cltlp12[,2])
+text(x = par("usr")[1] + 1.2, y = par("usr")[3] + 0.5,  # Bottom-left position
+     labels = paste("Shapiro p-val =", round(shalp12$p.value, 3)), 
+     adj = c(0, 0), cex = 0.8, col = "black")
+
+asyvarlp1 <- 1/mean(unlist(lapply(xxtlaplace1, function(x) x[2,2])))
+asyvarlp2 <- 1/mean(unlist(lapply(xxtlaplace2, function(x) x[2,2])))
+asyvarlp3 <- 1/mean(unlist(lapply(xxtlaplace3, function(x) x[2,2])))
+asyvarlp4 <- 1/mean(unlist(lapply(xxtlaplace4, function(x) x[2,2])))*16
+asyvarlp5 <- 1/mean(unlist(lapply(xxtlaplace5, function(x) x[2,2])))*16
+asyvarlp6 <- 1/mean(unlist(lapply(xxtlaplace6, function(x) x[2,2])))*16
+
+c(mean(cltlp7[,2]),mean(cltlp8[,2]),mean(cltlp9[,2]),mean(cltlp10[,2]),mean(cltlp11[,2]),mean(cltlp12[,2]))
+cbind(c(asyvarlp1 ,
+      asyvarlp2 ,
+      asyvarlp3,
+      asyvarlp4 ,
+      asyvarlp5 ,
+      asyvarlp6),c(var(cltlp7[,2]),var(cltlp8[,2]),var(cltlp9[,2]),var(cltlp10[,2]),var(cltlp11[,2]),var(cltlp12[,2])))
+
+#Fishermat
