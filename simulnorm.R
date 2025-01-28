@@ -112,7 +112,7 @@ datares <- function(data, F_eps, f_eps){
   return(cbind.data.frame(olse,crit))
 }
 
-trainnorm <- datagen(500, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1,1), M=100)
+trainnorm1 <- datagen(500, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
 res5004 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
 write.csv(res5004 , "res5004.csv")
@@ -120,7 +120,7 @@ system('git add res5004.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
-trainnorm <- datagen(200, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1,1), M=100)
+trainnorm2 <- datagen(200, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1,1), M=100)
 
 res2004 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
 write.csv(res2004 , "res2004.csv")
@@ -128,7 +128,7 @@ system('git add res2004.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
-trainnorm <- datagen(500, c(0.95,-0.16), rnorm, c(3,-1), c(1,1), M=100)
+trainnorm3 <- datagen(500, c(0.95,-0.16), rnorm, c(3,-1), c(1,1), M=100)
 
 res5002 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
 write.csv(res5002 , "res5002.csv")
@@ -136,42 +136,15 @@ system('git add res5002.csv')
 system('git commit -m "ajout res"')
 system('git push origin main ')
 
-# Manip. des résultats.
-library(readr)
-res2004 <- read_csv("Desktop/Thesis GIT/res2004.csv")
-res5002 <- read_csv("Desktop/Thesis GIT/res5002.csv")
-res5004 <- read_csv("Desktop/Thesis GIT/res5004.csv")
-
-beta <- c(0.95,-0.16,1.23,0.37)
-
-library(dplyr)
-res2004olse <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("olse")))))
-res2004crit <- as.data.frame(t(as.matrix(res2004 %>% select(starts_with("crit")))))
-res5002olse <- as.data.frame(t(as.matrix(res5002 %>% select(starts_with("olse")))))
-res5002crit <- as.data.frame(t(as.matrix(res5002 %>% select(starts_with("crit")))))
-res5004olse <- as.data.frame(t(as.matrix(res5004 %>% select(starts_with("olse")))))
-res5004crit <- as.data.frame(t(as.matrix(res5004 %>% select(starts_with("crit")))))
-
-mse <- function(trueb,data){
-  return((1/nrow(data))*sum(apply(data,1,function(x) (x-trueb)^2)))
-}
-
-mse(beta[1:2],res5002olse)
-mse(beta[1:2], res5002crit)
-mse(beta,res5004olse)
-mse(beta, res5004crit)
-mse(beta,res2004olse)
-mse(beta, res2004crit)
-
-apply(res5002olse,2,var)/apply(res5002crit,2,var)
-apply(res5004olse,2,var)/apply(res5004crit,2,var)
-
-plot(res2004crit[,1],res2004olse[,1])
-abline(a=0,b=1)
-
-plot(res5004crit[,1],res5004olse[,1])
-abline(a=0,b=1)
-
-lm(res2004crit[,1]~res2004olse[,1])
-lm(res5004crit[,1]~res5004olse[,1])
-plot(lm(res2004crit[,1]~res5004olse[,1]))
+xxtnorm1 <- lapply(trainnorm1, function(x) {
+  n <- nrow(x$X)  
+  Reduce("+", lapply(1:n, function(i) tcrossprod(x$X[i, ]))) / n
+})
+xxtnorm2 <- lapply(trainnorm2, function(x) {
+  n <- nrow(x$X)  
+  Reduce("+", lapply(1:n, function(i) tcrossprod(x$X[i, ]))) / n
+})
+xxtnorm3 <- lapply(trainnorm3, function(x) {
+  n <- nrow(x$X)  
+  Reduce("+", lapply(1:n, function(i) tcrossprod(x$X[i, ]))) / n
+})
