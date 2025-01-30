@@ -43,6 +43,27 @@ for (i in 1:100) {
   }
 }
 
+cltnorm1b <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltnorm1b[i,j]<- sqrt(500)*(res5004olse[i,j]-beta[j])
+  }
+}
+
+cltnorm2b <- matrix(nrow=100,ncol=4)
+for (i in 1:100) {
+  for (j in 1:4) {
+    cltnorm2b[i,j]<- sqrt(200)*(res2004olse[i,j]-beta[j])
+  }
+}
+
+cltnorm3b <- matrix(nrow=100,ncol=2)
+for (i in 1:100) {
+  for (j in 1:2) {
+    cltnorm3b[i,j]<- sqrt(500)*(res5002olse[i,j]-beta[j])
+  }
+}
+
 par(mfrow=c(1,3))
 qqPlot(cltnorm1[,2],xlab = "Normal Standard Quantiles",ylab=expression(sqrt(500 ) * (hat(beta)[2] + 0.16)))
 shanorm1 <- shapiro.test(cltnorm1[,2])
