@@ -1,1 +1,76 @@
+library(splines)
+library(stats4)
+library(VGAM)
+library(openxlsx)
+library(optimx)
 
+
+### Generating random data process.
+
+set.seed(123)
+#1) create a dataset with X following a normal but different patterns for the error.
+datagen <- function(n, beta, rcdf, meanX, sdX, M=100) {
+  d <- length(meanX)
+  datasets <- vector("list", M)  # Create a list to store M datasets
+  for (m in 1:M) {  # Loop over the number of replicates
+    x <- matrix(data = NA, nrow = n, ncol = d)  # Design matrix
+    for (j in 1:d)  x[,j] <- rnorm(n,mean=meanX[j],sd=sdX[j])
+    eps <- rcdf(n)  # Generate epsilon
+    y <- x%*%beta + eps  # Response variable
+    datasets[[m]] <- list(Y = y, X = x, B = beta, E = eps)  # Store dataset in the list
+  }
+  return(datasets)  # Return the list of datasets
+}
+
+
+
+### Simulations for || \beta^*-\beta_0||, || OLS-\beta_0||
+
+# Create a function which returns as a list both || \beta^*-\beta_0|| and || OLS-\beta_0||.
+normbeta <- function(data, F_eps, f_eps) {
+  return(list(norm1=sqrt(sum((backtracking(data,F_eps, f_eps)$res-data$B)^2)),norm2=sqrt(sum((data$B-ols(data))^2)),bias1=mean(backtracking(data,F_eps, f_eps)$res)-data$B, bias2=mean(ols(data))-data$B, var1=var(backtracking(data,F_eps, f_eps)$res), var2=var(ols(data))))
+}
+
+
+datares <- function(data, F_eps, f_eps){
+  olse <- ols(data)
+  crit <- backtracking(data, F_eps, f_eps)$res
+  return(cbind.data.frame(olse,crit))
+}
+
+trainnorm1 <- datagen(500, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1,1), M=100)
+
+res5004 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
+write.csv(res5004 , "res5004.csv")
+system('git add res5004.csv')
+system('git commit -m "ajout res"')
+system('git push origin main ')
+
+trainnorm2 <- datagen(200, c(0.95,-0.16,1.23,0.37), rnorm, c(3,-1,2,0.5), c(1,1,1,1), M=100)
+
+res2004 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
+write.csv(res2004 , "res2004.csv")
+system('git add res2004.csv')
+system('git commit -m "ajout res"')
+system('git push origin main ')
+
+trainnorm3 <- datagen(500, c(0.95,-0.16), rnorm, c(3,-1), c(1,1), M=100)
+
+res5002 <- lapply(trainnorm,function(x) datares(x, pnorm, dnorm))
+write.csv(res5002 , "res5002.csv")
+system('git add res5002.csv')
+system('git commit -m "ajout res"')
+system('git push origin main ')
+
+xxtnorm1 <- lapply(trainnorm1, function(x) {
+  n <- nrow(x$X)  
+  Reduce("+", lapply(1:n, function(i) tcrossprod(x$X[i, ]))) / n
+})
+xxtnorm2 <- lapply(trainnorm2, function(x) {
+  n <- nrow(x$X)  
+  Reduce("+", lapply(1:n, function(i) tcrossprod(x$X[i, ]))) / n
+})
+xxtnorm3 <- lapply(trainnorm3, function(x) {
+  n <- nrow(x$X)  
+  Reduce("+", lapply(1:n, function(i) tcrossprod(x$X[i, ]))) / n
+})
